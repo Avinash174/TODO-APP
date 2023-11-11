@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_app/add_page.dart';
 
 class TodoListPage extends StatefulWidget {
   const TodoListPage({super.key});
@@ -10,6 +11,18 @@ class TodoListPage extends StatefulWidget {
 class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Todo List'),
+        centerTitle: true,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (_) => AddTodoPage()));
+        },
+        label: Text('Add Todo'),
+      ),
+    );
   }
 }
