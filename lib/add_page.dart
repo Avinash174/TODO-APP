@@ -15,6 +15,7 @@ class _AddTodoPageState extends State<AddTodoPage> {
         title: Text('Add Todo'),
         centerTitle: true,
       ),
+      body: ListView(),
     );
   }
 }
