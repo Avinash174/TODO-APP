@@ -13,6 +13,7 @@ class TodoListPage extends StatefulWidget {
 
 class _TodoListPageState extends State<TodoListPage> {
   List items = [];
+
   bool isLoading = true;
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _TodoListPageState extends State<TodoListPage> {
             itemCount: items.length,
             itemBuilder: (BuildContext context, int index) {
               final item = items[index] as Map;
+              final id = item['_id'] as String;
               return ListTile(
                 leading: CircleAvatar(child: Text('${index + 1}')),
                 title: Text(
@@ -49,7 +51,10 @@ class _TodoListPageState extends State<TodoListPage> {
                 subtitle: Text(item['description']),
                 trailing: PopupMenuButton(onSelected: (value) {
                   if (value == 'edit') {
-                  } else if (value == 'delete') {}
+                    navigatoreditPage(item);
+                  } else if (value == 'delete') {
+                    deleteById(id);
+                  }
                 }, itemBuilder: (context) {
                   return [
                     const PopupMenuItem(
@@ -75,6 +80,54 @@ class _TodoListPageState extends State<TodoListPage> {
         label: const Text('Add Todo'),
       ),
     );
+  }
+
+  void showErrorMessage(String msg) {
+    final snackBar = SnackBar(
+      content: Text(
+        msg,
+        style: const TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.red,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  Future<void> deleteById(String id) async {
+    final url = 'https://api.nstack.in/v1/todos/$id';
+    final uri = Uri.parse(url);
+    final response = await http.delete(uri);
+    if (response.statusCode == 200) {
+      final filterItem =
+          items.where((element) => element['_id'] != id).toList();
+      setState(() {
+        items = filterItem;
+      });
+    } else {
+      showErrorMessage('Deletion Failed');
+    }
+  }
+
+  Future<void> navigatoreditPage(Map item) async {
+    final routes = MaterialPageRoute(
+      builder: (_) => AddTodoPage(todo: item),
+    );
+    Navigator.push(context, routes);
+    setState(() {
+      isLoading = true;
+    });
+    fetchTodo();
+  }
+
+  Future<void> navigatoraddPage(Map item) async {
+    final routes = MaterialPageRoute(
+      builder: (_) => AddTodoPage(todo: item),
+    );
+    Navigator.push(context, routes);
+    setState(() {
+      isLoading = true;
+    });
+    fetchTodo();
   }
 
   Future<void> fetchTodo() async {
