@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:todo_app/add_page.dart';
 
 class TodoListPage extends StatefulWidget {
@@ -9,20 +12,87 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
+  List items = [];
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    fetchTodo();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Todo List'),
+        title: const Text('Todo List'),
         centerTitle: true,
+      ),
+      body: Visibility(
+        visible: isLoading,
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+        replacement: RefreshIndicator(
+          color: Colors.white,
+          onRefresh: fetchTodo,
+          child: ListView.builder(
+            scrollDirection: Axis.vertical,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            itemCount: items.length,
+            itemBuilder: (BuildContext context, int index) {
+              final item = items[index] as Map;
+              return ListTile(
+                leading: CircleAvatar(child: Text('${index + 1}')),
+                title: Text(
+                  item['title'],
+                ),
+                subtitle: Text(item['description']),
+                trailing: PopupMenuButton(onSelected: (value) {
+                  if (value == 'edit') {
+                  } else if (value == 'delete') {}
+                }, itemBuilder: (context) {
+                  return [
+                    const PopupMenuItem(
+                      child: Text('Edit'),
+                      value: 'edit',
+                    ),
+                    const PopupMenuItem(
+                      child: Text('Delete'),
+                      value: 'delete',
+                    ),
+                  ];
+                }),
+              );
+            },
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (_) => AddTodoPage()));
+              context, MaterialPageRoute(builder: (_) => const AddTodoPage()));
         },
-        label: Text('Add Todo'),
+        label: const Text('Add Todo'),
       ),
     );
+  }
+
+  Future<void> fetchTodo() async {
+    final url = 'https://api.nstack.in/v1/todos?page=1&limit=20';
+    final uri = Uri.parse(url);
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body) as Map;
+      final result = json['items'] as List;
+      setState(() {
+        items = result;
+      });
+    } else {}
+
+    setState(() {
+      isLoading = false;
+    });
+    // log(response.toString());
+    // log(response.statusCode.toString());
   }
 }
