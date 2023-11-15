@@ -30,7 +30,7 @@ class _TodoListPageState extends State<TodoListPage> {
       ),
       body: Visibility(
         visible: isLoading,
-        child: const Center(
+        child:  Center(
           child: CircularProgressIndicator(),
         ),
         replacement: RefreshIndicator(
